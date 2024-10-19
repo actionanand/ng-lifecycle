@@ -224,3 +224,103 @@ To configure the pre-commit hook, simply add a `precommit` npm script. We want t
 
 - [GitHub Actions for Angular](https://github.com/rodrigokamada/angular-github-actions)
 - [Angular 16 - milestone release](https://github.com/actionanand/ng16-signal-milestone-release)
+
+## afterNextRender and afterRender
+
+Sometimes it’s necessary to use browser-only APIs to manually read or write the DOM. This can be challenging to do with the [lifecycle events](https://angular.io/guide/lifecycle-hooks#lifecycle-event-sequence) above, as they will also run during [server-side rendering and pre-rendering](https://angular.io/guide/glossary#server-side-rendering). For this purpose, Angular provides afterRender and afterNextRender. These functions can be used unconditionally, but will only have an effect on the browser. Both functions accept a callback that will run after the next [change detection](https://angular.io/guide/glossary#change-detection) cycle (**including any nested cycles**) has completed.
+
+Both hooks must be invoked within the injection context (inside constructor) and can accept an injector if there’s a need to run them outside of this context:
+
+```ts
+@Component()
+export class MyCmp {
+  private injector = inject(Injector);
+
+  onClick() {
+    afterNextRender(
+      () => {
+        // Do something
+      },
+      { injector: this.injector },
+    );
+  }
+}
+```
+
+These 2 hooks are right, **If you need to perform DOM manipulations after the view is fully rendered** and stable.
+
+### afterNextRender Hook
+
+The `afterNextRender` hook, albeit not the most descriptive name, takes a callback function that **runs once after the subsequent change detection cycle**. Typically, afterNextRender is ideal for performing one-time initializations, such as integrating third-party libraries or utilizing browser-specific APIs.
+
+The `afterNextRender` callback **executes once per `tick`** and then destroys itself. This implies that while we're not restricted to calling it only once, each invocation ensures it runs just once after the subsequent tick.
+
+```ts
+@Component()
+export class MyCmp {
+  constructor() {
+    afterNextRender(() => {
+      console.log('run once');
+    });
+
+    setTimeout(() => {
+      afterNextRender(() => {
+        console.log('run once');
+      });
+    }, 5000);
+  }
+}
+```
+
+### afterRender Hook
+
+Generally, if you need to manually read or write any layout data, such as size or location, you should use `afterRender`. The purpose of this function is to synchronise with the DOM and it is called after every change detection cycle that follows.
+
+```ts
+@Component({
+  selector: 'my-cmp',
+  template: `<span #content></span>`,
+})
+export class MyComponent {
+  content = viewChild.required<ElementRef>('content');
+
+  constructor() {
+    afterRender(() => {
+      console.log(this.content().nativeElement.scrollHeight);
+    });
+  }
+}
+```
+
+### Managing Hook Phases
+
+When employing `afterRender` or `afterNextRender`, you have the option to specify a phase, offering precise control over the sequencing of DOM operations. This capability allows you to arrange write operations before read operations, thereby minimizing [layout thrashing](https://web.dev/avoid-large-complex-layouts-and-layout-thrashing).
+
+```ts
+@Component({...})
+export class ExampleComponent {
+  private elementWidth = 0;
+  private elementRef = inject(ElementRef);
+
+  constructor() {
+    const nativeElement = this.elementRef.nativeElement;
+
+    // Write phase: Adjusting width.
+    afterNextRender(() => {
+      nativeElement.style.width = computeWidth();
+    }, { phase: AfterRenderPhase.Write });
+
+    // Read phase: Retrieving final width after adjustments.
+    afterNextRender(() => {
+      this.elementWidth = nativeElement.getBoundingClientRect().width;
+    }, { phase: AfterRenderPhase.Read });
+  }
+}
+```
+
+    1. `EarlyRead`: This phase is ideal for reading any layout-affecting DOM properties and styles necessary for subsequent calculations. If possible, minimize usage of this phase, favoring the Write and Read phases.
+    2. `MixedReadWrite`: This phase serves as the default option. It’s suitable for operations requiring both read and write access to layout-affecting properties and styles. However, it’s advisable to use the explicit Write and Read phases whenever possible.
+    3. `Write`: Opt for this phase when setting layout-affecting DOM properties and styles.
+    4. `Read`: Utilize this phase for reading layout-affecting DOM properties.
+
+- Source - [Exploring Angular’s afterRender and afterNextRender Hooks](https://netbasal.com/exploring-angulars-afterrender-and-afternextrender-hooks-7133612a0287)
