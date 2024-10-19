@@ -327,10 +327,25 @@ export class ExampleComponent {
 
 - Source - [Exploring Angular’s afterRender and afterNextRender Hooks](https://netbasal.com/exploring-angulars-afterrender-and-afternextrender-hooks-7133612a0287)
 
-  ![image](https://github.com/user-attachments/assets/72d9f96d-041b-4388-8648-ba9233352f46)
+![image](https://github.com/user-attachments/assets/72d9f96d-041b-4388-8648-ba9233352f46)
 
-  ![image](https://github.com/user-attachments/assets/de5b309e-1510-4511-9a4d-9481796f1ea2)
+we can understand the lifecycle hooks by splitting the process into two steps, **first-time hooks**, and **in every change detection cycle hooks**.
+
+1. **first-time hooks**, the triggered hooks are:
+   - onChanges
+   - **onInit**
+   - doCheck
+   - **afterContentInit**
+   - afterContentChecked
+   - **afterViewInit**
+   - afterViewChecked
+
+![image](https://github.com/user-attachments/assets/de5b309e-1510-4511-9a4d-9481796f1ea2)
+
+2. **in every change detection cycle hooks**, the triggered hooks are:
+   - onChanges
+   - doCheck
+   - afterContentChecked
+   - afterViewChecked
 
 ![image](https://github.com/user-attachments/assets/5edf53ef-b7c2-4a77-bd66-e02918b4e786)
-
-
