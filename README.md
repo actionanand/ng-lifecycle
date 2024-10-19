@@ -229,7 +229,7 @@ To configure the pre-commit hook, simply add a `precommit` npm script. We want t
 
 Sometimes it’s necessary to use browser-only APIs to manually read or write the DOM. This can be challenging to do with the [lifecycle events](https://angular.io/guide/lifecycle-hooks#lifecycle-event-sequence) above, as they will also run during [server-side rendering and pre-rendering](https://angular.io/guide/glossary#server-side-rendering). For this purpose, Angular provides afterRender and afterNextRender. These functions can be used unconditionally, but will only have an effect on the browser. Both functions accept a callback that will run after the next [change detection](https://angular.io/guide/glossary#change-detection) cycle (**including any nested cycles**) has completed.
 
-Both hooks must be invoked within the injection context (inside constructor) and can accept an injector if there’s a need to run them outside of this context:
+**Both hooks must be invoked within the injection context** (inside constructor) and can accept an injector if there’s a need to run them outside of this context:
 
 ```ts
 @Component()
@@ -318,9 +318,11 @@ export class ExampleComponent {
 }
 ```
 
-    1. `EarlyRead`: This phase is ideal for reading any layout-affecting DOM properties and styles necessary for subsequent calculations. If possible, minimize usage of this phase, favoring the Write and Read phases.
-    2. `MixedReadWrite`: This phase serves as the default option. It’s suitable for operations requiring both read and write access to layout-affecting properties and styles. However, it’s advisable to use the explicit Write and Read phases whenever possible.
-    3. `Write`: Opt for this phase when setting layout-affecting DOM properties and styles.
-    4. `Read`: Utilize this phase for reading layout-affecting DOM properties.
+- The phases operate in a predetermined sequence:
+
+  1. `EarlyRead`: This phase is ideal for reading any layout-affecting DOM properties and styles necessary for subsequent calculations. If possible, minimize usage of this phase, favoring the Write and Read phases.
+  2. `MixedReadWrite`: This phase serves as the default option. It’s suitable for operations requiring both read and write access to layout-affecting properties and styles. However, it’s advisable to use the explicit Write and Read phases whenever possible.
+  3. `Write`: Opt for this phase when setting layout-affecting DOM properties and styles.
+  4. `Read`: Utilize this phase for reading layout-affecting DOM properties.
 
 - Source - [Exploring Angular’s afterRender and afterNextRender Hooks](https://netbasal.com/exploring-angulars-afterrender-and-afternextrender-hooks-7133612a0287)
