@@ -326,3 +326,11 @@ export class ExampleComponent {
   4. `Read`: Utilize this phase for reading layout-affecting DOM properties.
 
 - Source - [Exploring Angular’s afterRender and afterNextRender Hooks](https://netbasal.com/exploring-angulars-afterrender-and-afternextrender-hooks-7133612a0287)
+
+  ![image](https://github.com/user-attachments/assets/72d9f96d-041b-4388-8648-ba9233352f46)
+
+  ![image](https://github.com/user-attachments/assets/de5b309e-1510-4511-9a4d-9481796f1ea2)
+
+![image](https://github.com/user-attachments/assets/5edf53ef-b7c2-4a77-bd66-e02918b4e786)
+
+
